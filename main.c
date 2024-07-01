@@ -3,16 +3,13 @@
 int main()
 {
   Coordinates p1;
-  p1 = initalizeCoordinates(4, 5, 6);
+  initalizeCoordinates(p1, 4, 5, 6);
 
-  float T[3] = {25, 45, 55};
-  Transformer t1 = translation(T);
-
-  displayCoordinate(p1);
+  Transformer t1;
+  float angle = PI/6;
+  rotation(t1, ROTATE_ABOUT_Z_AXIS, angle);
   displayTransformer(t1);
 
-  deleteCoordinates(p1);
-  deleteTransformer(t1);
   return 0;
 }
 
