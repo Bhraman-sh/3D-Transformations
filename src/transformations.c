@@ -143,7 +143,7 @@ void fixedLineRotation(Transformer t1, float theta, float * const line)
 
   for (int i = 0; i < 3; i++)
   {
-    diff = line[i+3] - line[i]; 
+    diff[i] = line[i+3] - line[i]; 
   }
 
   translation(translate, line);
@@ -158,7 +158,7 @@ void fixedLineRotation(Transformer t1, float theta, float * const line)
   rotation(z_rotate, ROTATE_ABOUT_Z_AXIS, angle, NULL);
   rotation(inverse_z_rotate, ROTATE_ABOUT_Z_AXIS, -angle, NULL);
 
-  float angle = atan(diff[2]/diff[0]);
+  angle = atan(diff[2]/diff[0]);
 
   rotation(y_rotate, ROTATE_ABOUT_Y_AXIS, angle, NULL);
   rotation(inverse_y_rotate, ROTATE_ABOUT_Y_AXIS, -angle, NULL);
@@ -166,10 +166,10 @@ void fixedLineRotation(Transformer t1, float theta, float * const line)
   
   rotation(x_rotate, ROTATE_ABOUT_X_AXIS, theta, NULL);
 
+  float empty[MAT_ROW][MAT_COLUMN];
+
   float (*const array[8])[MAT_COLUMN] = {empty, translate, y_rotate, z_rotate, x_rotate, 
     inverse_z_rotate, inverse_y_rotate, inverse_translate};
-
-  float empty[MAT_ROW][MAT_COLUMN];
 
   matrixMulitply(t1, array, 7);
 }
