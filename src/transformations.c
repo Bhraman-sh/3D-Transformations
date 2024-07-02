@@ -83,31 +83,40 @@ void scaling(Transformer scale, int type, float * const scaling_factor, float* c
 }
 
 
-void rotation(Transformer t1, int type, float theta)
+void rotation(Transformer t1, int type, float theta, float * const line)
 {
   int i, r, c;
   int j = 0;
 
-  float value[4] = {cos(theta), -sin(theta), cos(theta), sin(theta)};
+  float value[4] = {cos(theta), -sin(theta), sin(theta), cos(theta)};
   switch (type)
   {
     case ROTATE_ABOUT_Z_AXIS:
       i = 0;
+      break;
     
     case ROTATE_ABOUT_Y_AXIS:
-      i = 1;
+      i = 2;
+      break;
 
     case ROTATE_ABOUT_X_AXIS:
-      i = 2;
+      i = 1;
+      break;
+
+    case ROTATE_ABOUT_FIXED_LINE:
+      fixedLineRotation(t1, theta, line);
+      return;
   }
 
+  printf("%d\n", i);
   for (r=0; r<MAT_ROW; r++)
   {
-    for (c=0; c < MAT_COLUMN; c++)
+    for (c=0; c <MAT_COLUMN; c++)
     {
-      if (r>=i && r<i+2 && c>=i && c<i+2)
+      if ((r==i || r==(i+1)%3) && (c==i || c==(i+1)%3))
       {
-        t1[r%3][c%3] = value[j];
+        printf("%d %d\n", r, c);
+        t1[r][c] = value[j];
         j++;
       }
       else 
@@ -122,6 +131,79 @@ void rotation(Transformer t1, int type, float theta)
         }
       }
     }
+  }
+}
+
+void fixedLineRotation(Transformer t1, float theta, float * const line)
+{
+  Transformer translate, x_rotate, y_rotate, z_rotate;
+  Transformer inverse_translate, inverse_y_rotate, inverse_z_rotate;
+
+  float diff[3];
+
+  for (int i = 0; i < 3; i++)
+  {
+    diff = line[i+3] - line[i]; 
+  }
+
+  translation(translate, line);
+  for (int i = 0; i < 3; i++)
+  {
+    line[i] *= -1;
+  }
+  translation(inverse_translate, line);
+
+  float angle = atan(diff[1]/diff[0]);
+  
+  rotation(z_rotate, ROTATE_ABOUT_Z_AXIS, angle, NULL);
+  rotation(inverse_z_rotate, ROTATE_ABOUT_Z_AXIS, -angle, NULL);
+
+  float angle = atan(diff[2]/diff[0]);
+
+  rotation(y_rotate, ROTATE_ABOUT_Y_AXIS, angle, NULL);
+  rotation(inverse_y_rotate, ROTATE_ABOUT_Y_AXIS, -angle, NULL);
+
+  
+  rotation(x_rotate, ROTATE_ABOUT_X_AXIS, theta, NULL);
+
+  float (*const array[8])[MAT_COLUMN] = {empty, translate, y_rotate, z_rotate, x_rotate, 
+    inverse_z_rotate, inverse_y_rotate, inverse_translate};
+
+  float empty[MAT_ROW][MAT_COLUMN];
+
+  matrixMulitply(t1, array, 7);
+}
+
+void reflection(Transformer t1, int type)
+{
+  for(int r = 0; r < MAT_ROW; r++)
+  {
+    for(int c = 0; c < MAT_COLUMN; c++)
+    {
+      if (r != c) 
+      {
+        t1[r][c] = 0;
+      }
+      else
+      {
+        t1[r][c] = 1;
+      }
+    }
+  }
+
+  switch (type)
+  {
+    case REFLECT_ACROSS_XY_PLANE:
+      t1[2][2] = -1;
+      break;
+      
+    case REFLECT_ACROSS_YZ_PLANE:
+      t1[0][0] = -1;
+      break;
+
+    case REFLECT_ACROSS_ZX_PLANE:
+      t1[1][1] = -1;
+      break;
   }
 }
 

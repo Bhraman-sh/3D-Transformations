@@ -7,7 +7,7 @@ int main()
 
   Transformer t1;
   float angle = PI/6;
-  rotation(t1, ROTATE_ABOUT_Z_AXIS, angle);
+  rotation(t1, ROTATE_ABOUT_Y_AXIS, angle, NULL);
   displayTransformer(t1);
 
   return 0;
